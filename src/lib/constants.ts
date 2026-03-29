@@ -4,8 +4,8 @@ export const DESTINATION = {
   name: "Queens Tech Incubator at Queens College",
   address: "65-30 Kissena Blvd, Queens, NY 11367",
   coordinate: {
-    lat: 40.73659,
-    lng: -73.81678,
+    lat: 40.7367029,
+    lng: -73.8187956,
   } satisfies Coordinate,
 };
 
