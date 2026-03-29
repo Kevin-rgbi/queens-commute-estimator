@@ -13,6 +13,7 @@ type EstimateRequest = {
 };
 
 function getDurationRange(mode: TravelMode, durationMin: number): { min: number; max: number } {
+  const baseDurationMin = Math.max(1, Math.round(durationMin));
   const spreadByMode: Record<TravelMode, { minFactor: number; maxFactor: number; floorSpread: number }> = {
     car: { minFactor: 0.8, maxFactor: 1.35, floorSpread: 3 },
     transit: { minFactor: 0.85, maxFactor: 1.4, floorSpread: 5 },
@@ -20,11 +21,11 @@ function getDurationRange(mode: TravelMode, durationMin: number): { min: number;
   };
 
   const spread = spreadByMode[mode];
-  const minFromFactor = Math.floor(durationMin * spread.minFactor);
-  const maxFromFactor = Math.ceil(durationMin * spread.maxFactor);
+  const minFromFactor = Math.floor(baseDurationMin * spread.minFactor);
+  const maxFromFactor = Math.ceil(baseDurationMin * spread.maxFactor);
 
-  const min = Math.max(1, Math.min(minFromFactor, durationMin - spread.floorSpread));
-  const max = Math.max(min + 1, Math.max(maxFromFactor, durationMin + spread.floorSpread));
+  const min = Math.max(1, Math.min(minFromFactor, baseDurationMin - spread.floorSpread));
+  const max = Math.max(min + 1, Math.max(maxFromFactor, baseDurationMin + spread.floorSpread));
 
   return { min, max };
 }
