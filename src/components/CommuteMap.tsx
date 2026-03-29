@@ -45,7 +45,7 @@ export default function CommuteMap({
         />
 
         <Marker position={[destination.lat, destination.lng]} icon={destinationIcon}>
-          <Popup>Queens Tech Incubator at Queens College (Destination)</Popup>
+          <Popup>Queens Tech Incubator at Queens College (C2 Destination)</Popup>
         </Marker>
 
         {origin ? (
