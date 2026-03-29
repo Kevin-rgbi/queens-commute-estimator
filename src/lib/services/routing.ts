@@ -7,6 +7,7 @@ export type RouteEstimate = {
   distanceKm: number;
   durationMin: number;
   geometry: Coordinate[];
+  durationAdjusted: boolean;
 };
 
 type OsrmRouteResponse = {
@@ -45,9 +46,34 @@ export async function estimateRouteWithOsrm(
     throw new Error("No route found for this ZIP code and travel mode.");
   }
 
+  const rawDistanceKm = metersToKm(route.distance);
+  const rawDurationMin = secondsToMinutes(route.duration);
+  const adjustedDurationMin = applyDurationSanity(profile, rawDistanceKm, rawDurationMin);
+
   return {
-    distanceKm: metersToKm(route.distance),
-    durationMin: secondsToMinutes(route.duration),
+    distanceKm: rawDistanceKm,
+    durationMin: adjustedDurationMin,
     geometry: route.geometry.coordinates.map(([lng, lat]) => ({ lat, lng })),
+    durationAdjusted: adjustedDurationMin !== rawDurationMin,
   };
+}
+
+function applyDurationSanity(
+  profile: RouteProfile,
+  distanceKm: number,
+  durationMin: number,
+): number {
+  if (profile === "walking") {
+    // Clamp walking pace to a realistic upper bound (~6 km/h).
+    const minWalkingMinutes = (distanceKm / 6) * 60;
+    return Math.max(durationMin, minWalkingMinutes);
+  }
+
+  if (profile === "driving") {
+    // Prevent impossible city-driving durations by capping average speed (~65 km/h).
+    const minDrivingMinutes = (distanceKm / 65) * 60;
+    return Math.max(durationMin, minDrivingMinutes);
+  }
+
+  return durationMin;
 }

@@ -40,6 +40,9 @@ export async function POST(request: NextRequest) {
       geometry = route.geometry;
       explanation =
         "Car estimate is based on OSRM road routing from ZIP centroid to destination with current road-network speeds.";
+      if (route.durationAdjusted) {
+        explanation += " Duration was adjusted to a realistic city-driving bound.";
+      }
     }
 
     if (mode === "walk") {
@@ -49,6 +52,9 @@ export async function POST(request: NextRequest) {
       geometry = route.geometry;
       explanation =
         "Walk estimate is based on pedestrian network distance from ZIP centroid to destination using OSRM walking profile.";
+      if (route.durationAdjusted) {
+        explanation += " Duration was adjusted to a realistic walking-speed bound.";
+      }
     }
 
     if (mode === "transit") {
