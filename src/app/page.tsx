@@ -60,8 +60,8 @@ export default function Home() {
         <p className="eyebrow">GIS + Transit Estimate</p>
         <h1 className="hero-title">Queens Commute Estimator</h1>
         <p className="hero-copy">
-          Estimate relative travel time from any NYC-area ZIP code to the Queens Tech Incubator at
-          Queens College, using geocoding, routing, and transit-aware logic.
+          Built for interns commuting to TQIC once per week over the summer. Enter any NYC-area ZIP
+          code to see a realistic min-max travel range to Queens College.
         </p>
       </section>
 
@@ -98,13 +98,17 @@ export default function Home() {
             <h2 className="text-lg font-semibold text-slate-900">Methodology</h2>
             <p className="mt-2 text-sm leading-6 text-slate-700">
               This estimate geocodes ZIP code to a representative origin point, routes to Queens
-              Tech Incubator via GIS-aware services, and computes mode-specific travel time. Car and
-              walk use road/pedestrian network routing; transit uses a modular layer with optional
-              MTA GTFS alert integration or fallback heuristics.
+              Tech Incubator via GIS-aware services, and computes mode-specific travel time ranges.
+              Car and walk use road/pedestrian network routing; transit uses a modular layer with
+              optional MTA GTFS alert integration or fallback heuristics.
             </p>
             <p className="mt-3 text-sm text-slate-600">
               Relative commute thresholds: 0-20 Very Short, 21-35 Short, 36-50 Moderate, 51-70 Long,
               71+ Very Long.
+            </p>
+            <p className="mt-3 text-sm text-slate-600">
+              Planning note: these ranges are directional and do not account for personal situations
+              or major world events.
             </p>
           </section>
         </div>

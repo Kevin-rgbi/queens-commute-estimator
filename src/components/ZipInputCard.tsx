@@ -30,7 +30,7 @@ export function ZipInputCard({
       <div>
         <h2 className="text-xl font-semibold text-slate-900">Plan Your Commute</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Enter a NYC-area ZIP code and compare estimated time to Queens College.
+          Enter a NYC-area ZIP code to estimate your weekly summer intern commute range to TQIC.
         </p>
       </div>
 

@@ -1,5 +1,5 @@
 import { CommuteEstimate } from "@/lib/types";
-import { formatDistance, formatDuration } from "@/lib/utils/commute";
+import { formatDistance, formatDurationRange } from "@/lib/utils/commute";
 
 type ResultsCardProps = {
   result: CommuteEstimate | null;
@@ -35,7 +35,10 @@ export function ResultsCard({ result, error }: ResultsCardProps) {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Travel Time" value={formatDuration(result.durationMin)} />
+        <Stat
+          label="Travel Time Range"
+          value={formatDurationRange(result.durationRangeMin, result.durationRangeMax)}
+        />
         <Stat label="Commute Rating" value={result.rating} />
         <Stat label="Distance" value={formatDistance(result.distanceKm)} />
       </div>
@@ -48,7 +51,12 @@ export function ResultsCard({ result, error }: ResultsCardProps) {
       <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
         <strong className="font-semibold text-slate-900">Text Summary:</strong> From ZIP {result.zipCode},
         traveling by {result.mode === "transit" ? "train/public transit" : result.mode} to Queens Tech Incubator is
-        estimated at {formatDuration(result.durationMin)} over {formatDistance(result.distanceKm)} ({result.rating}).
+        estimated at {formatDurationRange(result.durationRangeMin, result.durationRangeMax)} over{" "}
+        {formatDistance(result.distanceKm)} ({result.rating}).
+      </div>
+
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        This range is for weekly summer intern planning and does not include personal delays or major world events.
       </div>
     </section>
   );

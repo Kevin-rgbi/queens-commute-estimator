@@ -21,6 +21,8 @@ export type CommuteEstimate = {
   destination: Coordinate;
   distanceKm: number;
   durationMin: number;
+  durationRangeMin: number;
+  durationRangeMax: number;
   rating: CommuteRating;
   explanation: string;
   methodology: string;

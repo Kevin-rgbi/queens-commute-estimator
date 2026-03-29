@@ -28,3 +28,7 @@ export function formatDistance(distanceKm: number): string {
 export function formatDuration(durationMin: number): string {
   return `${Math.round(durationMin)} min`;
 }
+
+export function formatDurationRange(minDurationMin: number, maxDurationMin: number): string {
+  return `${formatDuration(minDurationMin)} - ${formatDuration(maxDurationMin)}`;
+}

@@ -12,6 +12,23 @@ type EstimateRequest = {
   mode: TravelMode;
 };
 
+function getDurationRange(mode: TravelMode, durationMin: number): { min: number; max: number } {
+  const spreadByMode: Record<TravelMode, { minFactor: number; maxFactor: number; floorSpread: number }> = {
+    car: { minFactor: 0.8, maxFactor: 1.35, floorSpread: 3 },
+    transit: { minFactor: 0.85, maxFactor: 1.4, floorSpread: 5 },
+    walk: { minFactor: 0.9, maxFactor: 1.2, floorSpread: 4 },
+  };
+
+  const spread = spreadByMode[mode];
+  const minFromFactor = Math.floor(durationMin * spread.minFactor);
+  const maxFromFactor = Math.ceil(durationMin * spread.maxFactor);
+
+  const min = Math.max(1, Math.min(minFromFactor, durationMin - spread.floorSpread));
+  const max = Math.max(min + 1, Math.max(maxFromFactor, durationMin + spread.floorSpread));
+
+  return { min, max };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as EstimateRequest;
@@ -69,6 +86,8 @@ export async function POST(request: NextRequest) {
       explanation = transit.explanation;
     }
 
+    const durationRange = getDurationRange(mode, durationMin);
+
     const response: CommuteEstimate = {
       zipCode: body.zipCode,
       mode,
@@ -78,10 +97,12 @@ export async function POST(request: NextRequest) {
       destination,
       distanceKm: Number(distanceKm.toFixed(2)),
       durationMin: Math.round(durationMin),
+      durationRangeMin: durationRange.min,
+      durationRangeMax: durationRange.max,
       rating: getCommuteRating(durationMin),
       explanation,
       methodology:
-        "Estimates are generated from ZIP centroid geocoding, GIS routing logic, and mode-specific assumptions. Transit uses modular API logic with optional MTA GTFS alert weighting.",
+        "Estimates are generated from ZIP centroid geocoding, GIS routing logic, and mode-specific assumptions. Transit uses modular API logic with optional MTA GTFS alert weighting. Time ranges are planning guides and do not account for personal delays or major world events.",
       geometry,
     };
 
