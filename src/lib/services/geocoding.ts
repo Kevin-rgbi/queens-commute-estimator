@@ -7,6 +7,19 @@ type NominatimResult = {
   display_name: string;
 };
 
+type ZippopotamResponse = {
+  "post code": string;
+  country: string;
+  "country abbreviation": string;
+  places: Array<{
+    "place name": string;
+    longitude: string;
+    latitude: string;
+    state: string;
+    "state abbreviation": string;
+  }>;
+};
+
 export type ZipGeocodeResult = {
   coordinate: Coordinate;
   label: string;
@@ -18,25 +31,75 @@ export async function geocodeZip(zipCode: string): Promise<ZipGeocodeResult> {
   }
 
   const normalizedZip = zipCode.trim();
+
+  const nominatimResult = await geocodeZipWithNominatim(normalizedZip);
+  if (nominatimResult) {
+    return nominatimResult;
+  }
+
+  const zippopotamResult = await geocodeZipWithZippopotam(normalizedZip);
+  if (zippopotamResult) {
+    return zippopotamResult;
+  }
+
+  throw new Error("Could not geocode that ZIP code right now. Please try again in a moment.");
+}
+
+async function geocodeZipWithNominatim(zipCode: string): Promise<ZipGeocodeResult | null> {
   const strictUrl =
-    `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(normalizedZip)}` +
+    `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(zipCode)}` +
     "&city=New%20York&state=New%20York&country=United%20States&format=jsonv2&limit=1";
 
-  const strictResults = await fetchNominatim(strictUrl);
-  if (strictResults.length > 0) {
-    return toZipGeocodeResult(strictResults[0]);
+  try {
+    const strictResults = await fetchNominatim(strictUrl);
+    if (strictResults.length > 0) {
+      return toZipGeocodeResult(strictResults[0]);
+    }
+  } catch {
+    // Fall through to additional providers.
   }
 
   const fallbackUrl =
-    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(`${normalizedZip}, NYC`)}` +
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(`${zipCode}, NYC`)}` +
     "&format=jsonv2&limit=1";
 
-  const fallbackResults = await fetchNominatim(fallbackUrl);
-  if (fallbackResults.length === 0) {
-    throw new Error("Could not locate that ZIP code in the NYC region.");
+  try {
+    const fallbackResults = await fetchNominatim(fallbackUrl);
+    if (fallbackResults.length > 0) {
+      return toZipGeocodeResult(fallbackResults[0]);
+    }
+  } catch {
+    // Fall through to additional providers.
   }
 
-  return toZipGeocodeResult(fallbackResults[0]);
+  return null;
+}
+
+async function geocodeZipWithZippopotam(zipCode: string): Promise<ZipGeocodeResult | null> {
+  const response = await fetch(`https://api.zippopotam.us/us/${encodeURIComponent(zipCode)}`, {
+    headers: {
+      Accept: "application/json",
+    },
+    next: { revalidate: 1800 },
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = (await response.json()) as ZippopotamResponse;
+  const place = payload.places?.[0];
+  if (!place) {
+    return null;
+  }
+
+  return {
+    coordinate: {
+      lat: Number(place.latitude),
+      lng: Number(place.longitude),
+    },
+    label: `${place["place name"]}, ${place.state} ${payload["post code"]}, ${payload.country}`,
+  };
 }
 
 async function fetchNominatim(url: string): Promise<NominatimResult[]> {
